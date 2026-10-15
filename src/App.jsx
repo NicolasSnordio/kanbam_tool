@@ -72,12 +72,13 @@ function App() {
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)) }, [tasks])
   useEffect(() => {
+    if (view !== 'board') return
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!reduce) {
       animate('.intro-item', { opacity: [0, 1], translateY: [14, 0], delay: stagger(65), duration: 520, ease: 'out(3)' })
       animate('.kanban-column', { opacity: [0, 1], translateX: [18, 0], delay: stagger(80, { start: 180 }), duration: 650, ease: 'out(3)' })
     }
-  }, [])
+  }, [view])
 
   const filtered = useMemo(() => tasks.filter((task) => {
     const haystack = `${task.title} ${task.description} ${task.project} ${task.tags.join(' ')}`.toLowerCase()
@@ -111,7 +112,7 @@ function App() {
         <Header onMenu={() => setSidebarOpen(true)} query={query} setQuery={setQuery} onNew={() => setModal({ status: 'inbox' })} />
 
         {view === 'board' ? <div className="px-4 pb-5 pt-5 sm:px-6 lg:px-7">
-          <section className="intro-item mb-5 flex flex-col gap-4 opacity-0 xl:flex-row xl:items-center xl:justify-between">
+          <section className="intro-item mb-5 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.18em] text-[#7c8491]">
                 <span className="size-1.5 rounded-full bg-[#b5ff36] pulse-soft" /> Visão geral
@@ -128,7 +129,7 @@ function App() {
             </div>
           </section>
 
-          <section className="intro-item mb-3 flex flex-wrap items-center justify-between gap-3 opacity-0">
+          <section className="intro-item mb-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <SlidersHorizontal size={15} className="text-[#69717d]" />
               <div className="relative">
@@ -206,7 +207,7 @@ function Stat({ label, value, accent }) {
 
 function KanbanColumn({ column, tasks, draggedId, onDragStart, onDrop, onNew, onEdit }) {
   const [over, setOver] = useState(false)
-  return <div className="kanban-column min-w-0 rounded-2xl border border-white/[.06] bg-[#0d1117]/90 p-2.5 opacity-0"
+  return <div className="kanban-column min-w-0 rounded-2xl border border-white/[.06] bg-[#0d1117]/90 p-2.5"
     onDragOver={(e) => { e.preventDefault(); setOver(true) }} onDragLeave={() => setOver(false)} onDrop={(e) => { e.preventDefault(); if (draggedId) onDrop(draggedId, column.id); setOver(false) }}>
     <div className="mb-1.5 flex items-center gap-2 px-1 py-1.5"><span className="size-2 rounded-full" style={{ background: column.color }}/><h2 className="text-xs font-semibold">{column.title}</h2><span className="ml-auto rounded-md bg-white/[.055] px-1.5 py-0.5 text-[9px] text-[#8a929d]">{tasks.length}</span><button onClick={onNew} aria-label={`Adicionar em ${column.title}`} className="grid size-6 place-items-center rounded-lg text-[#68707b] hover:bg-white/[.06] hover:text-white"><Plus size={14}/></button></div>
     <div className={`min-h-[100px] space-y-1.5 rounded-xl transition-colors ${over ? 'bg-[#b5ff36]/[.035]' : ''}`}>
@@ -254,7 +255,7 @@ function CalendarView({ tasks, priority, setPriority, onEdit, onNew }) {
     setMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1))
   }
 
-  return <div className="calendar-shell opacity-0 px-4 py-7 sm:px-7 lg:px-9">
+  return <div className="calendar-shell px-4 py-7 sm:px-7 lg:px-9">
     <section className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
       <div>
         <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#7c8491]"><span className="size-1.5 rounded-full bg-[#9c8cff]"/> Agenda</div>
