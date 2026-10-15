@@ -311,7 +311,6 @@ function CalendarView({ tasks, priority, setPriority, onEdit, onNew }) {
         </div>
       </div>
     </section>
-    <p className="mt-3 text-xs text-[#59616c]">Passe o cursor sobre um dia para adicionar uma tarefa diretamente na data.</p>
   </div>
 }
 
