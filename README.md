@@ -5,6 +5,7 @@ Um quadro Kanban pessoal, bonito e direto ao ponto, criado para organizar demand
 ## Funcionalidades
 
 - Fluxo completo: Entrada, Backlog, Próximos, Em andamento, Aguardando e Concluído
+- Tela de acesso animada com sessão local no navegador
 - Agenda mensal com tarefas organizadas por prazo
 - Criação de tarefas diretamente em um dia do calendário
 - Arrastar e soltar tarefas entre colunas
@@ -35,7 +36,7 @@ npm run build
 
 ## Roadmap
 
-- [ ] Autenticação
+- [ ] Autenticação persistente com backend
 - [ ] Persistência em nuvem
 - [ ] Projetos e etiquetas personalizáveis
 - [ ] Datas e lembretes
