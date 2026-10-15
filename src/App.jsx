@@ -7,17 +7,20 @@ import {
 } from 'lucide-react'
 
 const COLUMNS = [
+  { id: 'inbox', title: 'Entrada', color: '#5cd6ff' },
   { id: 'backlog', title: 'Backlog', color: '#818895' },
-  { id: 'next', title: 'Próximas', color: '#9c8cff' },
+  { id: 'next', title: 'Próximos', color: '#9c8cff' },
   { id: 'doing', title: 'Em andamento', color: '#ffb45c' },
-  { id: 'done', title: 'Concluídas', color: '#b5ff36' },
+  { id: 'waiting', title: 'Aguardando', color: '#ff729d' },
+  { id: 'done', title: 'Concluído', color: '#b5ff36' },
 ]
 
 const SEED_TASKS = [
-  { id: 't1', title: 'Mapear fluxo de atendimento', description: 'Documentar as etapas atuais e identificar os maiores gargalos.', status: 'backlog', priority: 'Média', project: 'Operações', dueDate: '2026-10-18', tags: ['processo'] },
+  { id: 't1', title: 'Mapear fluxo de atendimento', description: 'Documentar as etapas atuais e identificar os maiores gargalos.', status: 'inbox', priority: 'Média', project: 'Operações', dueDate: '2026-10-18', tags: ['processo'] },
+  { id: 't6', title: 'Definir escopo do módulo', description: 'Separar requisitos essenciais das melhorias futuras.', status: 'backlog', priority: 'Média', project: 'Plataforma', dueDate: '2026-10-19', tags: ['planejamento'] },
   { id: 't2', title: 'Revisar landing page', description: 'Ajustar copy e validar o formulário em dispositivos móveis.', status: 'next', priority: 'Alta', project: 'Website', dueDate: '2026-10-16', tags: ['frontend', 'ui'] },
   { id: 't3', title: 'Integração de novos clientes', description: 'Criar endpoint de importação e feedback de progresso.', status: 'doing', priority: 'Alta', project: 'Plataforma', dueDate: '2026-10-14', tags: ['api'] },
-  { id: 't4', title: 'Painel de indicadores', description: 'Finalizar os cards de receita e volume mensal.', status: 'doing', priority: 'Média', project: 'Analytics', dueDate: '2026-10-17', tags: ['dados'] },
+  { id: 't4', title: 'Painel de indicadores', description: 'Finalizar os cards de receita e volume mensal.', status: 'waiting', priority: 'Média', project: 'Analytics', dueDate: '2026-10-17', tags: ['dados'] },
   { id: 't5', title: 'Corrigir sessão expirada', description: 'Melhorar retorno visual no redirecionamento para login.', status: 'done', priority: 'Baixa', project: 'Plataforma', dueDate: '2026-10-14', tags: ['bug'] },
 ]
 
@@ -105,7 +108,7 @@ function App() {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} taskCount={tasks.length} view={view} onView={setView} />
 
       <main className="lg:pl-[230px] min-h-screen">
-        <Header onMenu={() => setSidebarOpen(true)} query={query} setQuery={setQuery} onNew={() => setModal({ status: 'backlog' })} />
+        <Header onMenu={() => setSidebarOpen(true)} query={query} setQuery={setQuery} onNew={() => setModal({ status: 'inbox' })} />
 
         {view === 'board' ? <div className="px-4 pb-5 pt-5 sm:px-6 lg:px-7">
           <section className="intro-item mb-5 flex flex-col gap-4 opacity-0 xl:flex-row xl:items-center xl:justify-between">
@@ -140,14 +143,14 @@ function App() {
           </section>
 
           <div className="scrollbar-hidden overflow-x-auto pb-10">
-            <section className="grid min-w-[760px] grid-cols-4 items-start gap-3">
+            <section className="grid min-w-[840px] grid-cols-6 items-start gap-2.5">
               {COLUMNS.map((column) => (
                 <KanbanColumn key={column.id} column={column} tasks={filtered.filter((task) => task.status === column.id)} draggedId={draggedId}
                   onDragStart={setDraggedId} onDrop={moveTask} onNew={() => setModal({ status: column.id })} onEdit={setModal} />
               ))}
             </section>
           </div>
-        </div> : <CalendarView tasks={filtered} priority={priority} setPriority={setPriority} onEdit={setModal} onNew={(dueDate) => setModal({ status: 'backlog', dueDate })} />}
+        </div> : <CalendarView tasks={filtered} priority={priority} setPriority={setPriority} onEdit={setModal} onNew={(dueDate) => setModal({ status: 'inbox', dueDate })} />}
       </main>
       {modal && <TaskModal task={modal} onClose={() => setModal(null)} onSave={saveTask} onDelete={modal.id ? deleteTask : null} />}
     </div>

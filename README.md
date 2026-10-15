@@ -4,7 +4,7 @@ Um quadro Kanban pessoal, bonito e direto ao ponto, criado para organizar demand
 
 ## Funcionalidades
 
-- Quadro com Backlog, Próximas, Em andamento e Concluídas
+- Fluxo completo: Entrada, Backlog, Próximos, Em andamento, Aguardando e Concluído
 - Agenda mensal com tarefas organizadas por prazo
 - Criação de tarefas diretamente em um dia do calendário
 - Arrastar e soltar tarefas entre colunas
