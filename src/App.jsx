@@ -107,27 +107,25 @@ function App() {
       <main className="lg:pl-[230px] min-h-screen">
         <Header onMenu={() => setSidebarOpen(true)} query={query} setQuery={setQuery} onNew={() => setModal({ status: 'backlog' })} />
 
-        {view === 'board' ? <div className="px-4 sm:px-7 lg:px-9 pt-7 pb-5">
-          <section className="intro-item opacity-0 flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-8">
+        {view === 'board' ? <div className="px-4 pb-5 pt-5 sm:px-6 lg:px-7">
+          <section className="intro-item mb-5 flex flex-col gap-4 opacity-0 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#7c8491] mb-3">
+              <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.18em] text-[#7c8491]">
                 <span className="size-1.5 rounded-full bg-[#b5ff36] pulse-soft" /> Visão geral
               </div>
-              <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-[-.045em]">Olá, Nicolas <span className="text-[#6e7580]">— vamos produzir.</span></h1>
-              <p className="text-sm text-[#878e99] mt-2">Organize o que importa. Um passo de cada vez.</p>
+              <h1 className="font-display text-2xl font-semibold tracking-[-.045em] sm:text-3xl">Olá, Nicolas <span className="text-[#6e7580]">— vamos produzir.</span></h1>
             </div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <Stat label="Em andamento" value={tasks.filter((t) => t.status === 'doing').length} accent="#ffb45c" />
               <Stat label="Entregues" value={tasks.filter((t) => t.status === 'done').length} accent="#b5ff36" />
-              <div className="min-w-[104px] sm:min-w-[132px] rounded-2xl border border-white/[.07] bg-white/[.025] p-3 sm:p-4">
-                <p className="text-[10px] sm:text-xs text-[#777f8b] mb-2">Progresso</p>
-                <div className="flex items-end gap-2"><strong className="font-display text-xl">{progress}%</strong></div>
-                <div className="h-1 bg-white/[.08] rounded-full mt-2 overflow-hidden"><div className="h-full bg-[#b5ff36] rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
+              <div className="min-w-[96px] rounded-xl border border-white/[.07] bg-white/[.025] px-3 py-2.5 sm:min-w-[116px]">
+                <div className="flex items-center justify-between gap-2"><p className="text-[9px] text-[#777f8b] sm:text-[10px]">Progresso</p><strong className="font-display text-base">{progress}%</strong></div>
+                <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[.08]"><div className="h-full rounded-full bg-[#b5ff36] transition-all" style={{ width: `${progress}%` }} /></div>
               </div>
             </div>
           </section>
 
-          <section className="intro-item opacity-0 flex flex-wrap items-center justify-between gap-3 mb-5">
+          <section className="intro-item mb-3 flex flex-wrap items-center justify-between gap-3 opacity-0">
             <div className="flex items-center gap-2">
               <SlidersHorizontal size={15} className="text-[#69717d]" />
               <div className="relative">
@@ -141,12 +139,14 @@ function App() {
             <p className="text-xs text-[#626a75]">{filtered.length} {filtered.length === 1 ? 'tarefa visível' : 'tarefas visíveis'}</p>
           </section>
 
-          <section className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-4 items-start pb-10">
-            {COLUMNS.map((column) => (
-              <KanbanColumn key={column.id} column={column} tasks={filtered.filter((task) => task.status === column.id)} draggedId={draggedId}
-                onDragStart={setDraggedId} onDrop={moveTask} onNew={() => setModal({ status: column.id })} onEdit={setModal} />
-            ))}
-          </section>
+          <div className="scrollbar-hidden overflow-x-auto pb-10">
+            <section className="grid min-w-[760px] grid-cols-4 items-start gap-3">
+              {COLUMNS.map((column) => (
+                <KanbanColumn key={column.id} column={column} tasks={filtered.filter((task) => task.status === column.id)} draggedId={draggedId}
+                  onDragStart={setDraggedId} onDrop={moveTask} onNew={() => setModal({ status: column.id })} onEdit={setModal} />
+              ))}
+            </section>
+          </div>
         </div> : <CalendarView tasks={filtered} priority={priority} setPriority={setPriority} onEdit={setModal} onNew={(dueDate) => setModal({ status: 'backlog', dueDate })} />}
       </main>
       {modal && <TaskModal task={modal} onClose={() => setModal(null)} onSave={saveTask} onDelete={modal.id ? deleteTask : null} />}
@@ -198,28 +198,31 @@ function Header({ onMenu, query, setQuery, onNew }) {
 }
 
 function Stat({ label, value, accent }) {
-  return <div className="min-w-[104px] sm:min-w-[132px] rounded-2xl border border-white/[.07] bg-white/[.025] p-3 sm:p-4"><p className="text-[10px] sm:text-xs text-[#777f8b] mb-2">{label}</p><div className="flex items-center gap-2"><span className="size-1.5 rounded-full" style={{ background: accent }} /><strong className="font-display text-xl">{value}</strong></div></div>
+  return <div className="min-w-[96px] rounded-xl border border-white/[.07] bg-white/[.025] px-3 py-2.5 sm:min-w-[116px]"><p className="mb-1 text-[9px] text-[#777f8b] sm:text-[10px]">{label}</p><div className="flex items-center gap-2"><span className="size-1.5 rounded-full" style={{ background: accent }} /><strong className="font-display text-base">{value}</strong></div></div>
 }
 
 function KanbanColumn({ column, tasks, draggedId, onDragStart, onDrop, onNew, onEdit }) {
   const [over, setOver] = useState(false)
-  return <div className="kanban-column opacity-0 min-w-0 rounded-[20px] border border-white/[.06] bg-[#0d1117]/90 p-3"
+  return <div className="kanban-column min-w-0 rounded-2xl border border-white/[.06] bg-[#0d1117]/90 p-2.5 opacity-0"
     onDragOver={(e) => { e.preventDefault(); setOver(true) }} onDragLeave={() => setOver(false)} onDrop={(e) => { e.preventDefault(); if (draggedId) onDrop(draggedId, column.id); setOver(false) }}>
-    <div className="flex items-center gap-2 px-1 py-2 mb-2"><span className="size-2 rounded-full" style={{ background: column.color }}/><h2 className="text-sm font-semibold">{column.title}</h2><span className="ml-auto rounded-md bg-white/[.055] px-2 py-0.5 text-[10px] text-[#8a929d]">{tasks.length}</span><button onClick={onNew} aria-label={`Adicionar em ${column.title}`} className="grid size-7 place-items-center rounded-lg text-[#68707b] hover:bg-white/[.06] hover:text-white"><Plus size={16}/></button></div>
-    <div className={`min-h-[130px] space-y-2.5 rounded-xl transition-colors ${over ? 'bg-[#b5ff36]/[.035]' : ''}`}>
+    <div className="mb-1.5 flex items-center gap-2 px-1 py-1.5"><span className="size-2 rounded-full" style={{ background: column.color }}/><h2 className="text-xs font-semibold">{column.title}</h2><span className="ml-auto rounded-md bg-white/[.055] px-1.5 py-0.5 text-[9px] text-[#8a929d]">{tasks.length}</span><button onClick={onNew} aria-label={`Adicionar em ${column.title}`} className="grid size-6 place-items-center rounded-lg text-[#68707b] hover:bg-white/[.06] hover:text-white"><Plus size={14}/></button></div>
+    <div className={`min-h-[100px] space-y-1.5 rounded-xl transition-colors ${over ? 'bg-[#b5ff36]/[.035]' : ''}`}>
       {tasks.map((task) => <TaskCard key={task.id} task={task} onDragStart={onDragStart} onEdit={onEdit}/>) }
-      {!tasks.length && <button onClick={onNew} className="flex min-h-[112px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/[.08] text-xs text-[#59616c] hover:border-[#b5ff36]/20 hover:text-[#8e976e]"><Plus size={17}/> Adicionar tarefa</button>}
+      {!tasks.length && <button onClick={onNew} className="flex min-h-[86px] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-white/[.08] text-[10px] text-[#59616c] hover:border-[#b5ff36]/20 hover:text-[#8e976e]"><Plus size={15}/> Adicionar tarefa</button>}
     </div>
   </div>
 }
 
 function TaskCard({ task, onDragStart, onEdit }) {
-  return <article draggable onDragStart={() => onDragStart(task.id)} onDragEnd={() => onDragStart(null)} onClick={() => onEdit(task)} className="card-shadow group cursor-grab rounded-2xl border border-white/[.065] bg-[#151a21] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-white/[.13] hover:bg-[#181e26] active:cursor-grabbing">
-    <div className="mb-3 flex items-start justify-between gap-2"><span className="text-[10px] font-semibold uppercase tracking-[.08em] text-[#68717d]">{task.project}</span><button aria-label="Editar tarefa" className="-mr-1 -mt-1 grid size-7 place-items-center rounded-lg text-[#555e69] opacity-50 hover:bg-white/[.06] hover:text-white group-hover:opacity-100"><MoreHorizontal size={16}/></button></div>
-    <h3 className="text-[14px] font-semibold leading-snug tracking-[-.015em] text-[#f1f3f5]">{task.title}</h3>
-    <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed text-[#747d88]">{task.description}</p>
-    {task.tags.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{task.tags.map((tag) => <span key={tag} className="rounded-md bg-white/[.045] px-2 py-1 text-[9px] text-[#7f8893]">#{tag}</span>)}</div>}
-    <div className="mt-4 flex items-center justify-between border-t border-white/[.055] pt-3"><span className={`rounded-lg border px-2 py-1 text-[9px] font-semibold ${priorityStyle[task.priority]}`}>{task.priority}</span><span className="flex items-center gap-1 text-[10px] text-[#69717d]"><CalendarDays size={12}/>{formatDue(task.dueDate)}</span></div>
+  return <article draggable onDragStart={() => onDragStart(task.id)} onDragEnd={() => onDragStart(null)} onClick={() => onEdit(task)} className="group cursor-grab rounded-xl border border-white/[.065] bg-[#151a21] px-3 py-2.5 shadow-[0_8px_20px_rgba(0,0,0,.16)] transition duration-200 hover:-translate-y-px hover:border-white/[.13] hover:bg-[#181e26] active:cursor-grabbing">
+    <div className="mb-1.5 flex items-center gap-1.5"><span className={`size-1.5 shrink-0 rounded-full ${task.priority === 'Alta' ? 'bg-[#ff725c]' : task.priority === 'Média' ? 'bg-[#ffb45c]' : 'bg-[#b5ff36]'}`}/><span className="truncate text-[8px] font-bold uppercase tracking-[.09em] text-[#68717d]">{task.project}</span><button aria-label="Editar tarefa" className="ml-auto -mr-1 grid size-5 place-items-center rounded-md text-[#555e69] opacity-40 hover:bg-white/[.06] hover:text-white group-hover:opacity-100"><MoreHorizontal size={13}/></button></div>
+    <h3 className="truncate text-[12px] font-semibold leading-snug tracking-[-.01em] text-[#f1f3f5]" title={task.title}>{task.title}</h3>
+    {task.description && <p className="mt-1 truncate text-[9px] leading-relaxed text-[#68717d]">{task.description}</p>}
+    <div className="mt-2 flex min-w-0 items-center gap-1.5">
+      <span className={`shrink-0 rounded-md border px-1.5 py-0.5 text-[8px] font-semibold ${priorityStyle[task.priority]}`}>{task.priority}</span>
+      {task.tags.slice(0, 1).map((tag) => <span key={tag} className="min-w-0 truncate rounded-md bg-white/[.045] px-1.5 py-0.5 text-[8px] text-[#7f8893]">#{tag}</span>)}
+      <span className="ml-auto flex shrink-0 items-center gap-1 text-[8px] text-[#69717d]"><CalendarDays size={10}/>{formatDue(task.dueDate)}</span>
+    </div>
   </article>
 }
 
