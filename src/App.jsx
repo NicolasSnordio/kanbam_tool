@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { animate, stagger } from 'animejs'
+import { animate, createAnimatable, stagger } from 'animejs'
 import {
   Archive, ArrowRight, CalendarDays, Check, ChevronDown,
   ChevronLeft, ChevronRight, Clock3, Columns3, Eye, EyeOff, LayoutDashboard, LockKeyhole,
@@ -79,6 +79,8 @@ function App() {
 }
 
 function LoginScreen({ onLogin }) {
+  const loginRef = useRef(null)
+  const cursorBlurRef = useRef(null)
   const [ready, setReady] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -122,6 +124,51 @@ function LoginScreen({ onLogin }) {
   }, [])
 
   useEffect(() => {
+    const surface = loginRef.current
+    const cursorBlur = cursorBlurRef.current
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const finePointer = window.matchMedia('(pointer: fine)').matches
+    if (!surface || !cursorBlur || reduce || !finePointer) return undefined
+
+    let frame = 0
+    let target = { x: 0, y: 0 }
+    const cursorFollower = createAnimatable(cursorBlur, {
+      translateX: { duration: 850, ease: 'out(4)' },
+      translateY: { duration: 850, ease: 'out(4)' },
+      opacity: { duration: 600, ease: 'out(3)' },
+    })
+
+    function moveBlur() {
+      cursorFollower.translateX(target.x)
+      cursorFollower.translateY(target.y)
+      cursorFollower.opacity(.72)
+      frame = 0
+    }
+
+    function handlePointerMove(event) {
+      const bounds = surface.getBoundingClientRect()
+      target = {
+        x: event.clientX - bounds.left - cursorBlur.offsetWidth / 2,
+        y: event.clientY - bounds.top - cursorBlur.offsetHeight / 2,
+      }
+      if (!frame) frame = window.requestAnimationFrame(moveBlur)
+    }
+
+    function handlePointerLeave() {
+      cursorFollower.opacity(0)
+    }
+
+    surface.addEventListener('pointermove', handlePointerMove)
+    surface.addEventListener('pointerleave', handlePointerLeave)
+    return () => {
+      surface.removeEventListener('pointermove', handlePointerMove)
+      surface.removeEventListener('pointerleave', handlePointerLeave)
+      if (frame) window.cancelAnimationFrame(frame)
+      cursorFollower.revert()
+    }
+  }, [])
+
+  useEffect(() => {
     if (!ready || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     animate('.login-reveal', {
       opacity: [0, 1],
@@ -144,9 +191,10 @@ function LoginScreen({ onLogin }) {
     })
   }
 
-  return <main className="login-grid relative min-h-screen overflow-hidden bg-[#080b10] text-[#f6f7f9] selection:bg-[#b5ff36] selection:text-black">
+  return <main ref={loginRef} className="login-grid relative min-h-screen overflow-hidden bg-[#080b10] text-[#f6f7f9] selection:bg-[#b5ff36] selection:text-black">
     <div className="noise" />
     <div className="login-green-blur pointer-events-none absolute left-[-12rem] top-[-15rem] size-[34rem] rounded-full bg-[#b5ff36]/[.07] blur-[110px] will-change-transform" />
+    <div ref={cursorBlurRef} aria-hidden="true" className="login-cursor-blur pointer-events-none absolute left-0 top-0 size-[28rem] rounded-full bg-[#b5ff36]/[.09] opacity-0 blur-[120px] will-change-transform" />
     <div className="absolute bottom-[-16rem] right-[-10rem] size-[36rem] rounded-full bg-[#6f5cff]/[.08] blur-[120px]" />
 
     <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.08fr_.92fr]">
