@@ -81,6 +81,7 @@ function App() {
 function LoginScreen({ onLogin }) {
   const loginRef = useRef(null)
   const cursorBlurRef = useRef(null)
+  const cursorShapeRef = useRef(null)
   const [ready, setReady] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -126,35 +127,66 @@ function LoginScreen({ onLogin }) {
   useEffect(() => {
     const surface = loginRef.current
     const cursorBlur = cursorBlurRef.current
+    const cursorShape = cursorShapeRef.current
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!surface || !cursorBlur || reduce) return undefined
+    if (!surface || !cursorBlur || !cursorShape || reduce) return undefined
 
     let frame = 0
-    let target = { x: 0, y: 0 }
+    let settleTimer = 0
+    let lastPointer
+    let target = { x: 0, y: 0, angle: 0, stretch: 1, squeeze: 1, opacity: .58 }
     const cursorFollower = createAnimatable(cursorBlur, {
-      translateX: { duration: 700, ease: 'out(4)' },
-      translateY: { duration: 700, ease: 'out(4)' },
-      opacity: { duration: 600, ease: 'out(3)' },
+      translateX: { duration: 320, ease: 'out(4)' },
+      translateY: { duration: 320, ease: 'out(4)' },
+      opacity: { duration: 220, ease: 'out(3)' },
+    })
+    const shapeMotion = createAnimatable(cursorShape, {
+      rotate: { duration: 240, ease: 'out(3)' },
+      scaleX: { duration: 260, ease: 'out(4)' },
+      scaleY: { duration: 260, ease: 'out(4)' },
     })
 
     function moveBlur() {
       cursorFollower.translateX(target.x)
       cursorFollower.translateY(target.y)
-      cursorFollower.opacity(.82)
+      cursorFollower.opacity(target.opacity)
+      shapeMotion.rotate(target.angle)
+      shapeMotion.scaleX(target.stretch)
+      shapeMotion.scaleY(target.squeeze)
       frame = 0
     }
 
     function handleMouseMove(event) {
       const bounds = surface.getBoundingClientRect()
+      const elapsed = Math.max(event.timeStamp - (lastPointer?.time ?? event.timeStamp - 16), 8)
+      const deltaX = event.clientX - (lastPointer?.x ?? event.clientX)
+      const deltaY = event.clientY - (lastPointer?.y ?? event.clientY)
+      const velocity = Math.min(Math.hypot(deltaX, deltaY) / elapsed / 1.15, 1)
+      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI)
       target = {
         x: event.clientX - bounds.left - cursorBlur.offsetWidth / 2,
         y: event.clientY - bounds.top - cursorBlur.offsetHeight / 2,
+        angle: Number.isFinite(angle) ? angle : target.angle,
+        stretch: 1 + velocity * .72,
+        squeeze: 1 - velocity * .2,
+        opacity: .58 + velocity * .28,
       }
+      lastPointer = { x: event.clientX, y: event.clientY, time: event.timeStamp }
       if (!frame) frame = window.requestAnimationFrame(moveBlur)
+      window.clearTimeout(settleTimer)
+      settleTimer = window.setTimeout(() => {
+        shapeMotion.scaleX(1)
+        shapeMotion.scaleY(1)
+        cursorFollower.opacity(.64)
+      }, 130)
     }
 
     function handleMouseLeave() {
-      cursorFollower.opacity(0)
+      window.clearTimeout(settleTimer)
+      cursorFollower.opacity(0, 500, 'out(3)')
+      shapeMotion.scaleX(1)
+      shapeMotion.scaleY(1)
+      lastPointer = undefined
     }
 
     surface.addEventListener('mousemove', handleMouseMove)
@@ -163,7 +195,9 @@ function LoginScreen({ onLogin }) {
       surface.removeEventListener('mousemove', handleMouseMove)
       surface.removeEventListener('mouseleave', handleMouseLeave)
       if (frame) window.cancelAnimationFrame(frame)
+      window.clearTimeout(settleTimer)
       cursorFollower.revert()
+      shapeMotion.revert()
     }
   }, [])
 
@@ -193,7 +227,13 @@ function LoginScreen({ onLogin }) {
   return <main ref={loginRef} className="login-grid relative min-h-screen overflow-hidden bg-[#080b10] text-[#f6f7f9] selection:bg-[#b5ff36] selection:text-black">
     <div className="noise" />
     <div className="login-green-blur pointer-events-none absolute left-[-12rem] top-[-15rem] size-[34rem] rounded-full bg-[#b5ff36]/[.07] blur-[110px] will-change-transform" />
-    <div ref={cursorBlurRef} aria-hidden="true" className="login-cursor-blur pointer-events-none absolute left-0 top-0 size-[24rem] rounded-full bg-[#b5ff36]/[.12] opacity-0 blur-[105px] will-change-transform" />
+    <div ref={cursorBlurRef} aria-hidden="true" className="login-cursor-blur pointer-events-none absolute left-0 top-0 size-[24rem] opacity-0 will-change-transform">
+      <div
+        ref={cursorShapeRef}
+        className="absolute inset-0 bg-[radial-gradient(circle_at_62%_38%,rgba(197,255,99,.2),rgba(181,255,54,.1)_42%,rgba(181,255,54,0)_72%)] blur-[92px] will-change-transform"
+        style={{ borderRadius: '42% 58% 63% 37% / 45% 42% 58% 55%' }}
+      />
+    </div>
     <div className="absolute bottom-[-16rem] right-[-10rem] size-[36rem] rounded-full bg-[#6f5cff]/[.08] blur-[120px]" />
 
     <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.08fr_.92fr]">
