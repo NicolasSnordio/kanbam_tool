@@ -152,31 +152,43 @@ function LoginScreen({ onLogin }) {
       <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-10">
         <div className="w-full max-w-[420px]">
           <div className="mb-10 lg:hidden"><Brand /></div>
-          {!ready ? <div className="rounded-[26px] border border-white/[.075] bg-[#10151c]/90 p-8 shadow-2xl backdrop-blur-xl">
-            <div className="mb-7 grid size-12 place-items-center rounded-2xl bg-[#b5ff36] text-black"><Columns3 size={23} strokeWidth={2.5}/></div>
-            <h2 className="font-display text-2xl font-semibold tracking-[-.04em]">Preparando seu quadro</h2>
-            <div className="mt-7 h-1 overflow-hidden rounded-full bg-white/[.07]"><div className="login-progress-fill h-full origin-left rounded-full bg-[#b5ff36]"/></div>
-          </div> : <form onSubmit={submit} className="rounded-[26px] border border-white/[.075] bg-[#10151c]/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
-            <div className="login-reveal mb-8">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-[#b5ff36]">Acesso</p>
-              <h2 className="font-display text-3xl font-semibold tracking-[-.045em]">Bem-vindo de volta.</h2>
-              <p className="mt-2 text-sm text-[#737c87]">Entre para continuar de onde parou.</p>
+          <div className="login-auth-panel relative min-h-[470px] overflow-hidden rounded-[26px] border border-white/[.075] bg-[#10151c]/90 shadow-2xl backdrop-blur-xl">
+            <div
+              aria-hidden={ready}
+              className={`login-loader-layer absolute inset-0 flex flex-col justify-center p-8 transition-[opacity,transform] duration-500 ease-out ${ready ? 'pointer-events-none -translate-y-1.5 opacity-0' : 'translate-y-0 opacity-100'}`}
+            >
+              <div className="mb-7 grid size-12 place-items-center rounded-2xl bg-[#b5ff36] text-black"><Columns3 size={23} strokeWidth={2.5}/></div>
+              <h2 className="font-display text-2xl font-semibold tracking-[-.04em]">Preparando seu quadro</h2>
+              <div className="mt-7 h-1 overflow-hidden rounded-full bg-white/[.07]"><div className="login-progress-fill h-full origin-left rounded-full bg-[#b5ff36]"/></div>
             </div>
 
-            <label className="login-reveal mb-4 block">
-              <span className="mb-2 block text-xs font-medium text-[#929aa5]">E-mail</span>
-              <div className="relative"><Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6873]"/><input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="voce@empresa.com" className="w-full rounded-xl border border-white/[.08] bg-[#090d12] py-3.5 pl-11 pr-4 text-sm outline-none transition placeholder:text-[#424a55] focus:border-[#b5ff36]/35 focus:bg-[#0b1015]"/></div>
-            </label>
+            <form
+              onSubmit={submit}
+              aria-hidden={!ready}
+              inert={!ready}
+              className={`login-form-layer absolute inset-0 overflow-y-auto p-6 transition-[opacity,transform] duration-500 ease-out sm:p-8 ${ready ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-2 opacity-0'}`}
+            >
+              <div className="login-reveal mb-8">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-[#b5ff36]">Acesso</p>
+                <h2 className="font-display text-3xl font-semibold tracking-[-.045em]">Bem-vindo de volta.</h2>
+                <p className="mt-2 text-sm text-[#737c87]">Entre para continuar de onde parou.</p>
+              </div>
 
-            <label className="login-reveal mb-6 block">
-              <span className="mb-2 block text-xs font-medium text-[#929aa5]">Senha</span>
-              <div className="relative"><LockKeyhole size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6873]"/><input type={showPassword ? 'text' : 'password'} required minLength="6" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" className="w-full rounded-xl border border-white/[.08] bg-[#090d12] py-3.5 pl-11 pr-11 text-sm outline-none transition placeholder:text-[#424a55] focus:border-[#b5ff36]/35 focus:bg-[#0b1015]"/><button type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword((current) => !current)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#5f6873] hover:text-white">{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button></div>
-            </label>
+              <label className="login-reveal mb-4 block">
+                <span className="mb-2 block text-xs font-medium text-[#929aa5]">E-mail</span>
+                <div className="relative"><Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6873]"/><input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="voce@empresa.com" className="w-full rounded-xl border border-white/[.08] bg-[#090d12] py-3.5 pl-11 pr-4 text-sm outline-none transition placeholder:text-[#424a55] focus:border-[#b5ff36]/35 focus:bg-[#0b1015]"/></div>
+              </label>
 
-            <button type="submit" disabled={submitting} className="login-reveal flex w-full items-center justify-center gap-2 rounded-xl bg-[#b5ff36] px-4 py-3.5 text-sm font-bold text-[#10130c] transition hover:bg-[#c5ff63] active:scale-[.99] disabled:cursor-wait disabled:opacity-70">
-              <span>{submitting ? 'Entrando' : 'Entrar'}</span><ArrowRight className="login-submit-icon" size={17} strokeWidth={2.5}/>
-            </button>
-          </form>}
+              <label className="login-reveal mb-6 block">
+                <span className="mb-2 block text-xs font-medium text-[#929aa5]">Senha</span>
+                <div className="relative"><LockKeyhole size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6873]"/><input type={showPassword ? 'text' : 'password'} required minLength="6" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" className="w-full rounded-xl border border-white/[.08] bg-[#090d12] py-3.5 pl-11 pr-11 text-sm outline-none transition placeholder:text-[#424a55] focus:border-[#b5ff36]/35 focus:bg-[#0b1015]"/><button type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} onClick={() => setShowPassword((current) => !current)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#5f6873] hover:text-white">{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button></div>
+              </label>
+
+              <button type="submit" disabled={submitting} className="login-reveal flex w-full items-center justify-center gap-2 rounded-xl bg-[#b5ff36] px-4 py-3.5 text-sm font-bold text-[#10130c] transition hover:bg-[#c5ff63] active:scale-[.99] disabled:cursor-wait disabled:opacity-70">
+                <span>{submitting ? 'Entrando' : 'Entrar'}</span><ArrowRight className="login-submit-icon" size={17} strokeWidth={2.5}/>
+              </button>
+            </form>
+          </div>
           <p className="mt-6 text-center text-[10px] uppercase tracking-[.13em] text-[#434b55]">Kanbam · foco no que precisa avançar</p>
         </div>
       </section>
