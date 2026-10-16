@@ -134,7 +134,7 @@ function LoginScreen({ onLogin }) {
     let frame = 0
     let settleTimer = 0
     let lastPointer
-    let target = { x: 0, y: 0, angle: 0, stretch: 1, squeeze: 1, opacity: .58 }
+    let target = { x: 0, y: 0, angle: 0, stretch: 1, squeeze: 1, opacity: .48 }
     const cursorFollower = createAnimatable(cursorBlur, {
       translateX: { duration: 320, ease: 'out(4)' },
       translateY: { duration: 320, ease: 'out(4)' },
@@ -167,9 +167,9 @@ function LoginScreen({ onLogin }) {
         x: event.clientX - bounds.left - cursorBlur.offsetWidth / 2,
         y: event.clientY - bounds.top - cursorBlur.offsetHeight / 2,
         angle: Number.isFinite(angle) ? angle : target.angle,
-        stretch: 1 + velocity * .72,
-        squeeze: 1 - velocity * .2,
-        opacity: .58 + velocity * .28,
+        stretch: 1 + velocity * .48,
+        squeeze: 1 - velocity * .14,
+        opacity: .48 + velocity * .22,
       }
       lastPointer = { x: event.clientX, y: event.clientY, time: event.timeStamp }
       if (!frame) frame = window.requestAnimationFrame(moveBlur)
@@ -177,7 +177,7 @@ function LoginScreen({ onLogin }) {
       settleTimer = window.setTimeout(() => {
         shapeMotion.scaleX(1)
         shapeMotion.scaleY(1)
-        cursorFollower.opacity(.64)
+        cursorFollower.opacity(.54)
       }, 130)
     }
 
@@ -230,9 +230,17 @@ function LoginScreen({ onLogin }) {
     <div ref={cursorBlurRef} aria-hidden="true" className="login-cursor-blur pointer-events-none absolute left-0 top-0 size-[24rem] opacity-0 will-change-transform">
       <div
         ref={cursorShapeRef}
-        className="absolute inset-0 bg-[radial-gradient(circle_at_62%_38%,rgba(197,255,99,.2),rgba(181,255,54,.1)_42%,rgba(181,255,54,0)_72%)] blur-[92px] will-change-transform"
-        style={{ borderRadius: '42% 58% 63% 37% / 45% 42% 58% 55%' }}
-      />
+        className="absolute inset-0 will-change-transform"
+      >
+        <span
+          className="absolute inset-[8%] bg-[radial-gradient(ellipse_at_68%_42%,rgba(197,255,99,.17),rgba(181,255,54,.085)_48%,rgba(181,255,54,0)_74%)] blur-[64px]"
+          style={{ borderRadius: '62% 38% 54% 46% / 48% 58% 42% 52%' }}
+        />
+        <span
+          className="absolute left-[1%] top-[34%] h-[30%] w-[56%] -rotate-6 bg-[#b5ff36]/[.065] blur-[48px]"
+          style={{ borderRadius: '72% 28% 58% 42% / 55% 44% 56% 45%' }}
+        />
+      </div>
     </div>
     <div className="absolute bottom-[-16rem] right-[-10rem] size-[36rem] rounded-full bg-[#6f5cff]/[.08] blur-[120px]" />
 
