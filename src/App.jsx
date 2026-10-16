@@ -127,25 +127,24 @@ function LoginScreen({ onLogin }) {
     const surface = loginRef.current
     const cursorBlur = cursorBlurRef.current
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const finePointer = window.matchMedia('(pointer: fine)').matches
-    if (!surface || !cursorBlur || reduce || !finePointer) return undefined
+    if (!surface || !cursorBlur || reduce) return undefined
 
     let frame = 0
     let target = { x: 0, y: 0 }
     const cursorFollower = createAnimatable(cursorBlur, {
-      translateX: { duration: 850, ease: 'out(4)' },
-      translateY: { duration: 850, ease: 'out(4)' },
+      translateX: { duration: 700, ease: 'out(4)' },
+      translateY: { duration: 700, ease: 'out(4)' },
       opacity: { duration: 600, ease: 'out(3)' },
     })
 
     function moveBlur() {
       cursorFollower.translateX(target.x)
       cursorFollower.translateY(target.y)
-      cursorFollower.opacity(.72)
+      cursorFollower.opacity(.82)
       frame = 0
     }
 
-    function handlePointerMove(event) {
+    function handleMouseMove(event) {
       const bounds = surface.getBoundingClientRect()
       target = {
         x: event.clientX - bounds.left - cursorBlur.offsetWidth / 2,
@@ -154,15 +153,15 @@ function LoginScreen({ onLogin }) {
       if (!frame) frame = window.requestAnimationFrame(moveBlur)
     }
 
-    function handlePointerLeave() {
+    function handleMouseLeave() {
       cursorFollower.opacity(0)
     }
 
-    surface.addEventListener('pointermove', handlePointerMove)
-    surface.addEventListener('pointerleave', handlePointerLeave)
+    surface.addEventListener('mousemove', handleMouseMove)
+    surface.addEventListener('mouseleave', handleMouseLeave)
     return () => {
-      surface.removeEventListener('pointermove', handlePointerMove)
-      surface.removeEventListener('pointerleave', handlePointerLeave)
+      surface.removeEventListener('mousemove', handleMouseMove)
+      surface.removeEventListener('mouseleave', handleMouseLeave)
       if (frame) window.cancelAnimationFrame(frame)
       cursorFollower.revert()
     }
@@ -194,7 +193,7 @@ function LoginScreen({ onLogin }) {
   return <main ref={loginRef} className="login-grid relative min-h-screen overflow-hidden bg-[#080b10] text-[#f6f7f9] selection:bg-[#b5ff36] selection:text-black">
     <div className="noise" />
     <div className="login-green-blur pointer-events-none absolute left-[-12rem] top-[-15rem] size-[34rem] rounded-full bg-[#b5ff36]/[.07] blur-[110px] will-change-transform" />
-    <div ref={cursorBlurRef} aria-hidden="true" className="login-cursor-blur pointer-events-none absolute left-0 top-0 size-[28rem] rounded-full bg-[#b5ff36]/[.09] opacity-0 blur-[120px] will-change-transform" />
+    <div ref={cursorBlurRef} aria-hidden="true" className="login-cursor-blur pointer-events-none absolute left-0 top-0 size-[24rem] rounded-full bg-[#b5ff36]/[.12] opacity-0 blur-[105px] will-change-transform" />
     <div className="absolute bottom-[-16rem] right-[-10rem] size-[36rem] rounded-full bg-[#6f5cff]/[.08] blur-[120px]" />
 
     <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.08fr_.92fr]">
