@@ -103,10 +103,21 @@ function LoginScreen({ onLogin }) {
       ease: 'inOut(3)',
       onComplete: () => setReady(true),
     })
+    const greenBlur = animate('.login-green-blur', {
+      translateX: [-24, 118],
+      translateY: [-18, 76],
+      scale: [.94, 1.12],
+      opacity: [.55, 1],
+      duration: 9000,
+      alternate: true,
+      loop: true,
+      ease: 'inOut(2)',
+    })
 
     return () => {
       cards.cancel()
       progress.cancel()
+      greenBlur.cancel()
     }
   }, [])
 
@@ -135,7 +146,7 @@ function LoginScreen({ onLogin }) {
 
   return <main className="login-grid relative min-h-screen overflow-hidden bg-[#080b10] text-[#f6f7f9] selection:bg-[#b5ff36] selection:text-black">
     <div className="noise" />
-    <div className="absolute left-[-12rem] top-[-15rem] size-[34rem] rounded-full bg-[#b5ff36]/[.045] blur-[110px]" />
+    <div className="login-green-blur pointer-events-none absolute left-[-12rem] top-[-15rem] size-[34rem] rounded-full bg-[#b5ff36]/[.07] blur-[110px] will-change-transform" />
     <div className="absolute bottom-[-16rem] right-[-10rem] size-[36rem] rounded-full bg-[#6f5cff]/[.08] blur-[120px]" />
 
     <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.08fr_.92fr]">
