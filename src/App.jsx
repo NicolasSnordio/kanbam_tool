@@ -80,8 +80,9 @@ function App() {
 
 function LoginScreen({ onLogin }) {
   const loginRef = useRef(null)
-  const cursorBlurRef = useRef(null)
-  const cursorShapeRef = useRef(null)
+  const smokeLeadRef = useRef(null)
+  const smokeTrailRef = useRef(null)
+  const smokeDriftRef = useRef(null)
   const [ready, setReady] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -126,33 +127,44 @@ function LoginScreen({ onLogin }) {
 
   useEffect(() => {
     const surface = loginRef.current
-    const cursorBlur = cursorBlurRef.current
-    const cursorShape = cursorShapeRef.current
+    const smokeLayers = [smokeLeadRef.current, smokeTrailRef.current, smokeDriftRef.current]
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!surface || !cursorBlur || !cursorShape || reduce) return undefined
+    if (!surface || smokeLayers.some((layer) => !layer) || reduce) return undefined
 
     let frame = 0
     let settleTimer = 0
     let lastPointer
-    let target = { x: 0, y: 0, angle: 0, stretch: 1, squeeze: 1, opacity: .48 }
-    const cursorFollower = createAnimatable(cursorBlur, {
-      translateX: { duration: 320, ease: 'out(4)' },
-      translateY: { duration: 320, ease: 'out(4)' },
-      opacity: { duration: 220, ease: 'out(3)' },
-    })
-    const shapeMotion = createAnimatable(cursorShape, {
-      rotate: { duration: 240, ease: 'out(3)' },
-      scaleX: { duration: 260, ease: 'out(4)' },
-      scaleY: { duration: 260, ease: 'out(4)' },
+    let target = { x: 0, y: 0, velocity: 0 }
+    const followerSettings = [
+      { duration: 180, baseOpacity: .42, velocityBoost: .1 },
+      { duration: 460, baseOpacity: .28, velocityBoost: .07 },
+      { duration: 820, baseOpacity: .17, velocityBoost: .05 },
+    ]
+    const followers = smokeLayers.map((layer, index) => ({
+      layer,
+      ...followerSettings[index],
+      motion: createAnimatable(layer, {
+        translateX: { duration: followerSettings[index].duration, ease: 'out(4)' },
+        translateY: { duration: followerSettings[index].duration, ease: 'out(4)' },
+        opacity: { duration: 320, ease: 'out(3)' },
+      }),
+    }))
+    const smokeBreathing = animate('.login-smoke-wisp', {
+      scale: [.94, 1.06, .97],
+      rotate: [-4, 5, -2],
+      translateY: [5, -7, 3],
+      delay: stagger(620),
+      duration: 4600,
+      loop: true,
+      ease: 'inOut(2)',
     })
 
-    function moveBlur() {
-      cursorFollower.translateX(target.x)
-      cursorFollower.translateY(target.y)
-      cursorFollower.opacity(target.opacity)
-      shapeMotion.rotate(target.angle)
-      shapeMotion.scaleX(target.stretch)
-      shapeMotion.scaleY(target.squeeze)
+    function moveSmoke() {
+      followers.forEach(({ layer, motion, baseOpacity, velocityBoost }) => {
+        motion.translateX(target.x - layer.offsetWidth / 2)
+        motion.translateY(target.y - layer.offsetHeight / 2)
+        motion.opacity(baseOpacity + target.velocity * velocityBoost)
+      })
       frame = 0
     }
 
@@ -162,30 +174,25 @@ function LoginScreen({ onLogin }) {
       const deltaX = event.clientX - (lastPointer?.x ?? event.clientX)
       const deltaY = event.clientY - (lastPointer?.y ?? event.clientY)
       const velocity = Math.min(Math.hypot(deltaX, deltaY) / elapsed / 1.15, 1)
-      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI)
       target = {
-        x: event.clientX - bounds.left - cursorBlur.offsetWidth / 2,
-        y: event.clientY - bounds.top - cursorBlur.offsetHeight / 2,
-        angle: Number.isFinite(angle) ? angle : target.angle,
-        stretch: 1 + velocity * .48,
-        squeeze: 1 - velocity * .14,
-        opacity: .48 + velocity * .22,
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
+        velocity,
       }
       lastPointer = { x: event.clientX, y: event.clientY, time: event.timeStamp }
-      if (!frame) frame = window.requestAnimationFrame(moveBlur)
+      if (!frame) frame = window.requestAnimationFrame(moveSmoke)
       window.clearTimeout(settleTimer)
       settleTimer = window.setTimeout(() => {
-        shapeMotion.scaleX(1)
-        shapeMotion.scaleY(1)
-        cursorFollower.opacity(.54)
-      }, 130)
+        followers.forEach(({ layer, motion, baseOpacity }, index) => {
+          motion.translateY(target.y - layer.offsetHeight / 2 - 7 - index * 7, 780 + index * 220, 'out(2)')
+          motion.opacity(baseOpacity * .58, 720 + index * 180, 'out(2)')
+        })
+      }, 150)
     }
 
     function handleMouseLeave() {
       window.clearTimeout(settleTimer)
-      cursorFollower.opacity(0, 500, 'out(3)')
-      shapeMotion.scaleX(1)
-      shapeMotion.scaleY(1)
+      followers.forEach(({ motion }, index) => motion.opacity(0, 540 + index * 180, 'out(3)'))
       lastPointer = undefined
     }
 
@@ -196,8 +203,8 @@ function LoginScreen({ onLogin }) {
       surface.removeEventListener('mouseleave', handleMouseLeave)
       if (frame) window.cancelAnimationFrame(frame)
       window.clearTimeout(settleTimer)
-      cursorFollower.revert()
-      shapeMotion.revert()
+      followers.forEach(({ motion }) => motion.revert())
+      smokeBreathing.cancel()
     }
   }, [])
 
@@ -227,20 +234,14 @@ function LoginScreen({ onLogin }) {
   return <main ref={loginRef} className="login-grid relative min-h-screen overflow-hidden bg-[#080b10] text-[#f6f7f9] selection:bg-[#b5ff36] selection:text-black">
     <div className="noise" />
     <div className="login-green-blur pointer-events-none absolute left-[-12rem] top-[-15rem] size-[34rem] rounded-full bg-[#b5ff36]/[.07] blur-[110px] will-change-transform" />
-    <div ref={cursorBlurRef} aria-hidden="true" className="login-cursor-blur pointer-events-none absolute left-0 top-0 size-[24rem] opacity-0 will-change-transform">
-      <div
-        ref={cursorShapeRef}
-        className="absolute inset-0 will-change-transform"
-      >
-        <span
-          className="absolute inset-[8%] bg-[radial-gradient(ellipse_at_68%_42%,rgba(197,255,99,.17),rgba(181,255,54,.085)_48%,rgba(181,255,54,0)_74%)] blur-[64px]"
-          style={{ borderRadius: '62% 38% 54% 46% / 48% 58% 42% 52%' }}
-        />
-        <span
-          className="absolute left-[1%] top-[34%] h-[30%] w-[56%] -rotate-6 bg-[#b5ff36]/[.065] blur-[48px]"
-          style={{ borderRadius: '72% 28% 58% 42% / 55% 44% 56% 45%' }}
-        />
-      </div>
+    <div ref={smokeLeadRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 size-[18rem] opacity-0 mix-blend-screen will-change-transform">
+      <span className="login-smoke-wisp absolute inset-[15%] bg-[radial-gradient(ellipse_at_58%_46%,rgba(205,255,120,.27),rgba(181,255,54,.12)_48%,rgba(181,255,54,0)_76%)] blur-[46px]" style={{ borderRadius: '58% 42% 64% 36% / 45% 57% 43% 55%' }} />
+    </div>
+    <div ref={smokeTrailRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 size-[24rem] opacity-0 mix-blend-screen will-change-transform">
+      <span className="login-smoke-wisp absolute inset-[12%] bg-[radial-gradient(ellipse_at_44%_52%,rgba(190,255,80,.16),rgba(181,255,54,.07)_52%,rgba(181,255,54,0)_78%)] blur-[62px]" style={{ borderRadius: '39% 61% 46% 54% / 62% 41% 59% 38%' }} />
+    </div>
+    <div ref={smokeDriftRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 size-[30rem] opacity-0 mix-blend-screen will-change-transform">
+      <span className="login-smoke-wisp absolute inset-[10%] bg-[radial-gradient(ellipse_at_52%_44%,rgba(181,255,54,.11),rgba(181,255,54,.04)_55%,rgba(181,255,54,0)_80%)] blur-[80px]" style={{ borderRadius: '67% 33% 48% 52% / 38% 63% 37% 62%' }} />
     </div>
     <div className="absolute bottom-[-16rem] right-[-10rem] size-[36rem] rounded-full bg-[#6f5cff]/[.08] blur-[120px]" />
 
